@@ -16,6 +16,7 @@ Vagrant.configure("2") do |config|
     ansible.groups = {
       "servers" => ["medifor"],
       "servers:vars" => {
+        # 16.04 does not ship with python 2
         "ansible_python_interpreter" => "/usr/bin/python3"
       }
     }
