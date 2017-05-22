@@ -14,11 +14,7 @@ Vagrant.configure("2") do |config|
   # Configure provisioner
   config.vm.provision "ansible" do |ansible|
     ansible.groups = {
-      "servers" => ["medifor"],
-      "servers:vars" => {
-        # 16.04 does not ship with python 2
-        "ansible_python_interpreter" => "/usr/bin/python3"
-      }
+      "servers" => ["medifor"]
     }
     ansible.playbook = "provisioning/playbook.yaml"
   end

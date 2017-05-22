@@ -2,6 +2,18 @@
 - hosts: servers
   become: true
   become_user: root
+  gather_facts: no
+  pre_tasks:
+    - name: test if python on remote Machine
+      raw: test -e /usr/bin/python
+      ignore_errors: yes
+      register: testpython
+      changed_when: "testpython.rc != 0"
+    - name: install python2
+      raw: test -e /usr/bin/python || (sudo apt-get -y update && sudo apt-get -y install python-simplejson)
+      when: testpython.changed
+    - name: "gather facts"
+      setup:
 
   tasks:
     - name: update apt cache
@@ -16,7 +28,6 @@
         - python3-dev
         - python-pip
         - python3-pip
-        - python-virtualenv
         - nfs-common
         - ceph-common
     - name: update pip
