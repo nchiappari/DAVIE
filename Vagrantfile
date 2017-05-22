@@ -1,16 +1,24 @@
+
 Vagrant.configure("2") do |config|
-  config.vm.box = "ubuntu/xenial64"
-
-  config.vm.provider "virtualbox" do |v|
-    v.name = "my_vm"
+  # Configure the virtualization provider
+  config.vm.provider "virtualbox" do |vb|
+    vb.gui = false
+    vb.memory = "1024"
   end
 
-  config.vm.provision :ansible do |ansible|
+  # Configure a VM for MediFor
+  config.vm.define "medifor" do |medifor|
+    medifor.vm.box = "ubuntu/xenial64"
+  end
+
+  # Configure provisioner
+  config.vm.provision "ansible" do |ansible|
     ansible.groups = {
-      "servers" => ["my_vm"]
+      "servers" => ["medifor"],
+      "servers:vars" => {
+        "ansible_python_interpreter" => "/usr/bin/python3"
+      }
     }
-    ansible.limit = "all"
-    ansible.playbook = "playbook.yaml"
+    ansible.playbook = "provisioning/playbook.yaml"
   end
-
 end
