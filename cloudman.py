@@ -1,19 +1,35 @@
-from keystoneauth1 import loading
-from keystoneauth1 import session
-from novaclient import client
+import os_client_config
+import yaml
+from terminaltables import AsciiTable
 
-AUTH_URL = "http://10.107.0.2:5000/v3"
-USERNAME = "nchiappari"
-PASSWORD = ""
-PROJECT_ID = "69f48877162b4b94a99c1ffa67f5691c"
-VERSION = "2"
+#retrieves the names of all of the clouds specified in clouds.yaml
+with open("clouds.yaml", 'r') as config_file:
+    clouds = yaml.load(config_file)['clouds'].keys()
 
-loader = loading.get_plugin_loader('password')
-auth = loader.load_from_options(auth_url=AUTH_URL,
-                                username=USERNAME,
-                                password=PASSWORD,
-                                user_domain_name="users")
-sess = session.Session(auth=auth)
-nova = client.Client(VERSION, session=sess)
 
-nova.servers.list()
+def print_instance_breakdown(cloud):
+    instances = sdk.compute.servers()
+
+    table_data = [
+        ['Name', 'Project', 'Flavor', 'Created']
+    ]
+    for instance in instances:
+        row = []
+        row.append(instance.name)
+        row.append(instance.project_id)
+        row.append(instance.flavor['id'])
+        row.append(instance.created_at)
+        table_data.append(row)
+
+    table = AsciiTable(table_data)
+    print(table.table)
+
+
+for cloud in clouds:
+    row_of_pluses = "+"*((100 - len(cloud)) / 2)
+    #print cloud name
+    print("\n{} CLOUD: {} {}\n".format(row_of_pluses, cloud, row_of_pluses))
+
+    sdk = os_client_config.make_sdk(cloud=cloud)
+
+    projects = print_instance_breakdown(cloud)
