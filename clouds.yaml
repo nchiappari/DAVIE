@@ -1,0 +1,10 @@
+clouds:
+  medifor:
+    auth:
+      auth_url: "http://10.107.0.2:5000/v3"
+      domain_id: b36d146501ea4680bb5eafbd22348505
+      project_name: Other
+      username: nchiappari
+      password: 
+    region_name: RegionOne
+    identity_api_version: 3
