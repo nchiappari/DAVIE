@@ -36,5 +36,8 @@
         state: latest
     - name: install py dependencies
       pip:
-        name: python-openstackclient
+        name: "{{ item }}"
         state: present
+      with_items:
+        - terminaltables
+        - python-openstackclient
