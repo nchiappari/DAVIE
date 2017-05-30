@@ -75,7 +75,7 @@ def build_data_set():
 
             formatted_instances.append(new_dict)
 
-    return formatted_instances
+    return sorted(formatted_instances, key=lambda k: k['created_at'], reverse=True)
 
 
 
