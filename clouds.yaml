@@ -1,10 +1,19 @@
 clouds:
-  medifor:
+  Other:
     auth:
       auth_url: "http://10.107.0.2:5000/v3"
       domain_id: b36d146501ea4680bb5eafbd22348505
-      project_name: Other
+      project_id: 69f48877162b4b94a99c1ffa67f5691c
       username: nchiappari
       password: 
+    region_name: RegionOne
+    identity_api_version: 3
+  gitlab-runners:
+    auth:
+      auth_url: "http://10.107.0.2:5000/v3"
+      domain_id: b36d146501ea4680bb5eafbd22348505
+      project_id: afb0cd810d1f405aab77a72ee01a4617
+      username: nchiappari
+      password:
     region_name: RegionOne
     identity_api_version: 3
