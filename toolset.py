@@ -2,14 +2,20 @@ import sys
 import os_client_config
 import yaml, json
 from terminaltables import AsciiTable
+import requests
 
 # map id to name
 flavor_id_to_name = {}
-project_id_to_name= {}
+project_id_to_name = {}
 
 # collects aggregate data on flavors used by project
 # {project_id:{flavor_id:flavor_occurrance_count_within_that_project}}
 aggregate_data = {}
+
+# maps cloud names to tokens
+cloud_to_token = {}
+
+URL_COMPUTE = "http://10.107.0.2:8774/v2.1"
 
 #retrieves the names of all of the clouds specified in clouds.yaml
 with open("clouds.yaml", 'r') as config_file:
@@ -40,9 +46,11 @@ def print_table_from_list_of_dict(data_set, list_of_keys, header=None):
 # uses OpenStack SDK to gather data
 def build_data_set():
     formatted_instances = []
+    flavor_breakdown = []
 
     for cloud in clouds:
         sdk = os_client_config.make_sdk(cloud=cloud)
+
         instances = sdk.compute.servers()
 
         for instance in instances:
@@ -85,6 +93,39 @@ def print_separator(title):
     print("\n{} {} {}\n".format(row_of_pluses, title, row_of_pluses))
 
 
+def get_flavor_metadata(flavor_id, token):
+    r = requests.get("{}/flavors/{}/os-extra_specs".format(URL_COMPUTE, flavor_id), headers={'X-Auth-Token': token})
+    return r.json()['extra_specs']
+
+def print_GPU_breakdown():
+    breakdown = build_GPU_breakdown()
+
+    for key in breakdown:
+        print("{}:".format(key))
+        print_table_from_list_of_dict(breakdown[key], ['name', 'count'], header=["Flavor", "PCI Passthrough Device Count"])
+
+# returns only GPU flavors and their PCI passthrough device count
+def build_GPU_breakdown():
+    result = {}
+    for cloud in clouds:
+        sdk = os_client_config.make_sdk(cloud=cloud)
+
+        cloud_to_token[cloud] = sdk.authorize()
+
+        flavors = sdk.compute.flavors()
+
+        gpu_flavors = []
+
+        for flavor in flavors:
+            meta_data = get_flavor_metadata(flavor.id, cloud_to_token[cloud])
+            if 'aggregate_instance_extra_specs:gpu' in meta_data and meta_data['aggregate_instance_extra_specs:gpu']:
+                count = meta_data['pci_passthrough:alias'].split(":")[1]
+                gpu_flavors.append({"name":flavor.name, "count":count})
+
+        result[cloud] = gpu_flavors
+
+    return result
+
 def print_all_info():
     data_set = build_data_set()
 
@@ -106,4 +147,10 @@ def print_all_info():
 
         print_table_from_list_of_dict(row, ['Flavor', 'Count'])
 
+    print_separator("GPU Breakdown")
+    print_GPU_breakdown()
+
+
+
+# TODO instead of printing all, add command interface/move specific functionality into separate files
 print_all_info()
